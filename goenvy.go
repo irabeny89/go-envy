@@ -10,6 +10,12 @@ import (
 // This function reads the environment variables in a file into the system environment(e.g. ".env") at runtime.
 //
 // Note: ensure to call this function before accessing the environment variables from the file. It is best placed as the first line of code in your root program e.g "main.go" or [package].go
+// func main() {
+//  // invoke early to load and set variables in env file
+//  LoadEnv()
+//  // then you can access variables like usual
+//  env := os.GetEnv("KEY")
+// }
 func LoadEnv() {
 	file, err := os.Open(".env")
 	if err != nil {
