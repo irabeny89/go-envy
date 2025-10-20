@@ -5,6 +5,21 @@ This function reads the environment variables in a file(e.g. ".env") into the sy
 
 ## How To Use
 
+First, ensure a `.env` file contains environment variables you want within your code:
+
+```sh
+# comment
+NO_SPACE=value1
+SPACED_ENTRY = value2
+SINGLE_QUOTED='single quote text allowed'
+DOUBLE_QUOTED="double quote text allowed"
+SINGLE_QUOTES_MULTILINE='single quotes first line
+another line but ensure they are wrapped in quotes
+'
+DOUBLE_QUOTES_MULTILINE="double quotes first line
+another line but ensure they are wrapped in quotes"
+```
+
 Ensure to call the `LoadEnv()` function before accessing the environment variables from the file.
 It is best placed as the first line of code in your root program e.g `main.go` or `package.go`
 
