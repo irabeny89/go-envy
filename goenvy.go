@@ -7,15 +7,16 @@ import (
 	"strings"
 )
 
-// This function reads the environment variables in a file into the system environment(e.g. ".env") at runtime.
+// This function reads the environment variables in a file (e.g. ".env") into the system environment at runtime.
 //
 // Note: ensure to call this function before accessing the environment variables from the file. It is best placed as the first line of code in your root program e.g "main.go" or [package].go
-// func main() {
-//  // invoke early to load and set variables in env file
-//  LoadEnv()
-//  // then you can access variables like usual
-//  env := os.GetEnv("KEY")
-// }
+//
+//	func main() {
+//	 // invoke early to load and set variables in env file
+//	 LoadEnv()
+//	 // then you can access variables like usual
+//	 env := os.GetEnv("KEY")
+//	}
 func LoadEnv() {
 	file, err := os.Open(".env")
 	if err != nil {
@@ -27,33 +28,55 @@ func LoadEnv() {
 	var multilineVal string
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
-		line := scanner.Text()
-		kvSlice := strings.Split(line, "=")
+		lineText := scanner.Text()
+		kvSlice := strings.Split(lineText, "=")
 
-		isComment := strings.HasPrefix(line, "#")
+		isComment := strings.HasPrefix(lineText, "#")
 		hasValidPattern := len(kvSlice) == 2
 		isMultiline := len(multilineVal) != 0
-		hasLine := len(line) != 0
+		hasLineText := len(lineText) > 0
 
 		if !isComment && hasValidPattern {
 			k, v := kvSlice[0], kvSlice[1]
 			k, v = strings.Trim(k, " "), strings.Trim(v, " ")
-			// multiline begins
-			if strings.HasPrefix(v, "\"") || strings.HasPrefix(v, "'") {
-				multilineKey = k
-				multilineVal = v[1:] + "\n" // ignore closing quote eg `'` or `"`
+
+			isSingleLineDoubleQuotes := strings.HasPrefix(v, "\"") && strings.HasSuffix(v, "\"")
+			isSingleLineSingleQuotes := strings.HasPrefix(v, "'") && strings.HasSuffix(v, "'")
+
+			// single line with quotes e.g KEY='val'
+			if isSingleLineDoubleQuotes || isSingleLineSingleQuotes {
+				v = v[1 : len(v)-1] // remove enclosing quotes
+				os.Setenv(k, v)
 				continue
 			}
+			// multiline with quotes begins
+			if strings.HasPrefix(v, "\"") || strings.HasPrefix(v, "'") {
+				multilineKey = k
+				multilineVal = v[1:] + "\n" // ignore starting quote eg `'` or `"`
+				continue
+			}
+			// single line no quotes
 			os.Setenv(k, v)
 		}
-		if isMultiline && hasLine {
-			// multiline ends
-			if strings.HasSuffix(line, "\"") || strings.HasSuffix(line, "'") {
-				multilineVal += line[:len(line)-1] // ignore closing quote eg `'` or `"`
-				os.Setenv(multilineKey, multilineVal)
-			} else {
-				multilineVal += line + "\n"
+		if isMultiline && hasLineText {
+			// multiline ends with closing quote on a new line alone
+			if len(lineText) == 1 {
+				// do nothing & reset multiline variables
+				multilineKey, multilineVal = "", ""
+				continue
 			}
+			// multiline ends with text e.g abc'
+			if strings.HasSuffix(lineText, "\"") || strings.HasSuffix(lineText, "'") {
+				// ignore closing quote eg `'` or `"`
+				multilineVal += lineText[:len(lineText)-1]
+				os.Setenv(multilineKey, multilineVal)
+				// reset multiline variables
+				multilineKey, multilineVal = "", ""
+				continue
+			}
+			// regular line, so add new line to look multiline on print
+			multilineVal += lineText + "\n"
+			os.Setenv(multilineKey, multilineVal)
 			continue
 		}
 	}
