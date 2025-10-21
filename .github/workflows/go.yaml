@@ -37,36 +37,26 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-      - name: Initialize Git Config
-        run: |
-          git config --global user.name "${{ github.actor }}"
-          git config --global user.email "${{ github.actor }}+github-actions@users.noreply.github.com"
-
-      - name: Get Next Version
-        uses: cocogitto/cocogitto-action@v3
-        id: next-version
         with:
-          dry-run: true
-        continue-on-error: true
-
-      - name: Tag Commit
-        run: git tag v${{ steps.next-version.outputs.version }}
-
-      - name: Push Tagged Commit
-        run: git push origin --tags
+          fetch-depth: 0
 
       - name: Conventional Commit and Semver Release
         uses: cocogitto/cocogitto-action@v3
         id: release
         with:
           release: true
-          git-user: "${{ github.actor }}"
-          git-user-email: "${{ github.actor }}+github-actions@users.noreply.github.com"
+
+      - name: Print version
+        run: "echo '${{ steps.release.outputs.version }}'"
+
+      - name: Tag & Push Commit
+        run: |
+          git tag v${{ steps.release.outputs.version }}
+          git push origin --tags
 
       - name: Generate Github Release Changelog
         run: cog changelog --at ${{ steps.release.outputs.version }} -t full_hash > GITHUB_CHANGELOG.md
-
+      
       - name: Upload Github Release
         id: gh-release
         uses: softprops/action-gh-release@v2
