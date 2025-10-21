@@ -1,0 +1,18 @@
+mode: set
+github.com/irabeny89/go-envy/goenvy.go:20.16,22.16 2 1
+github.com/irabeny89/go-envy/goenvy.go:22.16,23.13 1 0
+github.com/irabeny89/go-envy/goenvy.go:25.2,30.21 5 1
+github.com/irabeny89/go-envy/goenvy.go:30.21,39.36 7 1
+github.com/irabeny89/go-envy/goenvy.go:39.36,47.60 5 1
+github.com/irabeny89/go-envy/goenvy.go:47.60,50.13 3 1
+github.com/irabeny89/go-envy/goenvy.go:53.4,53.63 1 1
+github.com/irabeny89/go-envy/goenvy.go:53.63,56.13 3 1
+github.com/irabeny89/go-envy/goenvy.go:59.4,59.19 1 1
+github.com/irabeny89/go-envy/goenvy.go:61.3,61.33 1 1
+github.com/irabeny89/go-envy/goenvy.go:61.33,63.26 1 1
+github.com/irabeny89/go-envy/goenvy.go:63.26,66.13 2 1
+github.com/irabeny89/go-envy/goenvy.go:69.4,69.77 1 1
+github.com/irabeny89/go-envy/goenvy.go:69.77,75.13 4 1
+github.com/irabeny89/go-envy/goenvy.go:78.4,80.12 3 1
+github.com/irabeny89/go-envy/goenvy.go:84.2,84.37 1 1
+github.com/irabeny89/go-envy/goenvy.go:84.37,85.13 1 0
