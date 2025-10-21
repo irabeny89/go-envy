@@ -50,19 +50,11 @@ jobs:
           dry-run: true
         continue-on-error: true
 
-      - name: Update Version
-        run: |
-          git tag v"${{ steps.next-version.outputs.version }}"
-          if [[ -n $(git status --porcelain) ]]; then
-            git add .
-            git commit -m "chore: version bump to ${{ steps.next-version.outputs.version }}"
-          fi
+      - name: Tag Commit
+        run: git tag v${{ steps.next-version.outputs.version }}
 
-      - name: Push Committed Changes
-        run: |
-          if git rev-list --count --left-only @{upstream}...HEAD > /dev/null 2>&1; then
-            git push origin main
-          fi
+      - name: Push Tagged Commit
+        run: git push origin --tags
 
       - name: Conventional Commit and Semver Release
         uses: cocogitto/cocogitto-action@v3
