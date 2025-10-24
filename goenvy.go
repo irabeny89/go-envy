@@ -1,4 +1,24 @@
 // Package to load and set environment variables from a file e.g .env file.
+//
+// You can load your environment variables from multiple files by calling any of the load functions (LoadEnv, LoadEnvPath etc) multiple times.
+//
+// Note: The last load function overwrites any previous environment variable value
+//
+// Usage:
+//
+//	package main
+//	import (
+//	  "os"
+//	  goenvy "github.com/irabeny89/go-envy"
+//	)
+//	func main() {
+//	 // invoke early to load and set variables in env file
+//	 goenvy.LoadEnv() // 1: loads from default .env file
+//	 // 2: load & append from `.env.development` file 
+//	 goenvy.LoadEnvPath(".env.development") // this will overwrite same key values assigned from step 1
+//	 // then you can access variables like usual
+//	 env := os.GetEnv("KEY")
+//	}
 package goenvy
 
 import (
