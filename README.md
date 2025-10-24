@@ -24,9 +24,16 @@ Ensure to call the `LoadEnv()` function before accessing the environment variabl
 It is best placed as the first line of code in your root program e.g `main.go` or `package.go`
 
 ```go
+package main
+import (
+  "os"
+  goenvy "github.com/irabeny89/go-envy"
+)
 func main() {
-  // invoke early to load and set variables in env file
-  LoadEnv()
+// invoke early to load and set variables in env file
+  goenvy.LoadEnv() // 1: loads from default .env file
+// 2: (optional) load & append from `.env.development` file 
+  goenvy.LoadEnvPath(".env.development") // this will overwrite same key values assigned from step 1
   // then you can access variables like usual
   env := os.GetEnv("KEY")
 }
