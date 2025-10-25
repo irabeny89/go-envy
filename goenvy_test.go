@@ -5,9 +5,7 @@ import (
 	"testing"
 )
 
-func TestLoadEnv(t *testing.T) {
-	LoadEnv()
-
+func runLoadEnvAssertions(t *testing.T) {
 	noSpaceExpect := os.Getenv("NO_SPACE")
 	noSpaceActual := "value1"
 	spacedEntryExpect := os.Getenv("SPACED_ENTRY")
@@ -41,10 +39,7 @@ func TestLoadEnv(t *testing.T) {
 	}
 }
 
-func TestLoadEnvPathOverwrite(t *testing.T) {
-	LoadEnv()
-	LoadEnvPath(".env.development")
-
+func runLoadEnvPathAssertions(t *testing.T) {
 	noSpaceExpect := os.Getenv("NO_SPACE")
 	noSpaceActual := "anotherfilevalue1"
 	spacedEntryExpect := os.Getenv("SPACED_ENTRY")
@@ -81,4 +76,20 @@ func TestLoadEnvPathOverwrite(t *testing.T) {
 	if extraExpect != extraActual {
 		t.Error("LoadEnvPath failed to get extra value from previous env file")
 	}
+}
+
+func TestLoadEnv(t *testing.T) {
+	LoadEnv()
+	runLoadEnvAssertions(t)
+}
+
+func TestLoadEnvWithArg(t *testing.T) {
+	LoadEnv(".env")
+	runLoadEnvAssertions(t)
+}
+
+func TestLoadEnvPath(t *testing.T) {
+	LoadEnv()
+	LoadEnvPath(".env.development")
+	runLoadEnvPathAssertions(t)
 }

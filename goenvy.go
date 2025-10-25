@@ -14,7 +14,7 @@
 //	func main() {
 //	 // invoke early to load and set variables in env file
 //	 goenvy.LoadEnv() // 1: loads from default .env file
-//	 // 2: (optional) load & append from `.env.development` file 
+//	 // 2: (optional) load & append from `.env.development` file
 //	 goenvy.LoadEnvPath(".env.development") // this will overwrite same key values assigned from step 1
 //	 // then you can access variables like usual
 //	 env := os.GetEnv("KEY")
@@ -26,6 +26,8 @@ import (
 	"os"
 	"strings"
 )
+
+const defaultPath string = ".env"
 
 func processEnvFile(file *os.File) {
 	var multilineKey string
@@ -107,14 +109,21 @@ func processEnvFile(file *os.File) {
 //	 // then you can access variables like usual
 //	 env := os.GetEnv("KEY")
 //	}
-func LoadEnv() {
-	file, err := os.Open(".env")
+func LoadEnv(path ...string) {
+	var file *os.File
+	var err error
+	if len(path) == 0 {
+		file, err = os.Open(defaultPath)
+	} else {
+		file, err = os.Open(path[0])
+	}
 	if err != nil {
 		panic(err)
 	}
 	defer file.Close()
 	processEnvFile(file)
 }
+
 // This function reads the environment variables from the file path (e.g. ".env.development") argument provided on execution.
 //
 // Note: ensure to call this function before accessing the environment variables from the file. It is best placed as the first line of code in your root program e.g "main.go" or [package].go.
