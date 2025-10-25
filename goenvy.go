@@ -27,23 +27,7 @@ import (
 	"strings"
 )
 
-// This function reads the environment variables in a file (e.g. ".env") into the system environment at runtime.
-//
-// Note: ensure to call this function before accessing the environment variables from the file. It is best placed as the first line of code in your root program e.g "main.go" or [package].go
-//
-//	func main() {
-//	 // invoke early to load and set variables in env file
-//	 LoadEnv()
-//	 // then you can access variables like usual
-//	 env := os.GetEnv("KEY")
-//	}
-func LoadEnv() {
-	file, err := os.Open(".env")
-	if err != nil {
-		panic(err)
-	}
-	defer file.Close()
-
+func processEnvFile(file *os.File) {
 	var multilineKey string
 	var multilineVal string
 	scanner := bufio.NewScanner(file)
@@ -101,7 +85,58 @@ func LoadEnv() {
 		}
 	}
 
-	if err = scanner.Err(); err != nil {
+	if err := scanner.Err(); err != nil {
 		panic(err)
 	}
+}
+
+// This function reads the environment variables in a file (e.g. ".env") into the system environment at runtime.
+//
+// Note: ensure to call this function before accessing the environment variables from the file. It is best placed as the first line of code in your root program e.g "main.go" or [package].go.
+//
+// Usage:
+//
+//	package main
+//	import (
+//	  "os"
+//	  goenvy "github.com/irabeny89/go-envy"
+//	)
+//	func main() {
+//	 // invoke early to load and set variables in env file
+//	 goenvy.LoadEnv()
+//	 // then you can access variables like usual
+//	 env := os.GetEnv("KEY")
+//	}
+func LoadEnv() {
+	file, err := os.Open(".env")
+	if err != nil {
+		panic(err)
+	}
+	defer file.Close()
+	processEnvFile(file)
+}
+// This function reads the environment variables from the file path (e.g. ".env.development") argument provided on execution.
+//
+// Note: ensure to call this function before accessing the environment variables from the file. It is best placed as the first line of code in your root program e.g "main.go" or [package].go.
+//
+// Usage:
+//
+//	package main
+//	import (
+//	  "os"
+//	  goenvy "github.com/irabeny89/go-envy"
+//	)
+//	func main() {
+//	 // invoke early to load and set variables in env file
+//	 goenvy.LoadEnvPath()
+//	 // then you can access variables like usual
+//	 env := os.GetEnv("KEY")
+//	}
+func LoadEnvPath(path string) {
+	file, err := os.Open(path)
+	if err != nil {
+		panic(err)
+	}
+	defer file.Close()
+	processEnvFile(file)
 }
