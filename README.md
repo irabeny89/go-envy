@@ -32,6 +32,7 @@ import (
 func main() {
 // invoke early to load and set variables in env file
   goenvy.LoadEnv() // 1: loads from default .env file
+// goenvy.LoadEnv(".env") // optional path param can be passed
 // 2: (optional) load & append from `.env.development` file 
   goenvy.LoadEnvPath(".env.development") // this will overwrite same key values assigned from step 1
   // then you can access variables like usual

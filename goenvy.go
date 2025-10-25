@@ -106,6 +106,7 @@ func processEnvFile(file *os.File) {
 //	func main() {
 //	 // invoke early to load and set variables in env file
 //	 goenvy.LoadEnv()
+//	// goenvy.LoadEnv(".env") // optional path param can be passed
 //	 // then you can access variables like usual
 //	 env := os.GetEnv("KEY")
 //	}
