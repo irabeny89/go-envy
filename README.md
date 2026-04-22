@@ -127,6 +127,16 @@ You can dry-run the version bump locally if you have `cog` installed:
 cog bump --auto --dry-run
 ```
 
+### 4. Git Hooks
+To ensure your commit messages are always compliant, you can set up a Git hook that runs every time you commit:
+
+```bash
+chmod +x scripts/setup-hooks.sh
+./scripts/setup-hooks.sh
+```
+
+This will create a `commit-msg` hook in your `.git` directory that validates your messages before allowing a commit.
+
 ## License
 
 This project is licensed under the MIT License.
