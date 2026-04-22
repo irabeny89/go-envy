@@ -128,6 +128,7 @@ cog bump --auto --dry-run
 ```
 
 ### 4. Git Hooks
+
 To ensure your commit messages are always compliant, you can set up a Git hook that runs every time you commit:
 
 ```bash
