@@ -93,10 +93,32 @@ You can control the behavior of the package using the following environment vari
 
 ## Running Tests
 
-To run the test suite:
-
 ```bash
 go test -v .
+```
+
+## CI/CD and Releasing
+
+This project uses an automated CI/CD pipeline powered by GitHub Actions and [Cocogitto](https://github.com/cocogitto/cocogitto).
+
+### 1. Conventional Commits
+Releases are triggered based on [Conventional Commits](https://www.conventionalcommits.org/). Every commit message must follow this format:
+- `feat: ...` → Triggers a **Minor** version bump (e.g., v0.3.0 -> v0.4.0).
+- `fix: ...` → Triggers a **Patch** version bump (e.g., v0.3.0 -> v0.3.1).
+- `chore:`, `docs:`, `refactor:`, `test:`, `style:` → Do not trigger a version bump by default.
+- `feat!:` or `fix!:` (or a `BREAKING CHANGE` footer) → Triggers a **Major** version bump.
+
+### 2. Automated Workflow
+When you push to the `main` branch:
+1. **Tests**: All tests (Unit, Race Detector, Coverage) are executed.
+2. **Versioning**: If tests pass, Cocogitto analyzes the new commits to calculate the next SemVer version.
+3. **Tagging**: A new Git tag (with the `v` prefix) is automatically created and pushed.
+4. **Release**: A GitHub Release is created with an automatically generated changelog based on your commit messages.
+
+### 3. Manual Release
+You can dry-run the version bump locally if you have `cog` installed:
+```bash
+cog bump --auto --dry-run
 ```
 
 ## License
