@@ -6,6 +6,7 @@
 // root directory at startup if the environment variable GOENVY_AUTO_LOAD is set to "true" or "1".
 //
 // Configuration:
+//   - GOENVY_DEFAULT_PATH: The default path to load environment variables from. Defaults to ".env".
 //   - GOENVY_AUTO_LOAD: Set to "true" or "1" to enable automatic loading of the .env file on init.
 //   - GOENVY_SHOW_LOGS: Set to "true" or "1" to show loading status and error messages in the console.
 //
@@ -34,11 +35,10 @@ import (
 	"strings"
 )
 
-const defaultPath string = ".env"
-
 var (
-	autoLoad = false
-	showLogs = false
+	defaultPath = ".env"
+	autoLoad    = false
+	showLogs    = false
 )
 
 // init automatically attempts to load the .env file if GOENVY_AUTO_LOAD is enabled.
@@ -49,6 +49,10 @@ func init() {
 // configureAndLoad reads environment configuration and attempts to load the default .env file.
 // It is separated from init() to allow for easier unit testing.
 func configureAndLoad() {
+	envDefaultPath := os.Getenv("GOENVY_DEFAULT_PATH")
+	if envDefaultPath != "" {
+		defaultPath = envDefaultPath
+	}
 	envAutoLoad := os.Getenv("GOENVY_AUTO_LOAD")
 	if envAutoLoad != "" {
 		autoLoad = envAutoLoad == "true" || envAutoLoad == "1"
@@ -61,12 +65,12 @@ func configureAndLoad() {
 		showLogs = envShowLogs == "true" || envShowLogs == "1"
 	}
 	if showLogs {
-		fmt.Println("[GOENVY.INFO] Auto-loading environment variables from", defaultPath)
+		fmt.Printf("[GOENVY.INFO] Auto-loading environment variables from default path: %s\n", defaultPath)
 	}
 	err := LoadEnvPath(defaultPath)
 	if err != nil {
 		if showLogs {
-			fmt.Println("[GOENVY.ERROR] Error loading .env file:", err)
+			fmt.Printf("[GOENVY.ERROR] Error loading %s file: %v\n", defaultPath, err)
 			fmt.Println("[GOENVY.INFO] Ensure that the file exists and is in the root directory of your project.")
 			fmt.Println("[GOENVY.INFO] Or load it yourself by calling LoadEnvPath(pathToFile) function in main function. e.g goenvy.LoadEnvPath(\".env.development\") in main function.")
 		}

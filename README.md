@@ -87,6 +87,7 @@ You can control the behavior of the package using the following environment vari
 
 | Variable | Default | Description |
 | :--- | :--- | :--- |
+| `GOENVY_DEFAULT_PATH` | `.env` | The default path to load environment variables from. |
 | `GOENVY_AUTO_LOAD` | `false` | Set to `true` or `1` to automatically load `.env` on startup. |
 | `GOENVY_SHOW_LOGS` | `false` | Set to `true` or `1` to enable success/error logging to console. |
 
