@@ -1,8 +1,14 @@
-## Unreleased (e35ad22..987289d)
+## Unreleased (e35ad22..85de36d)
+
+#### Documentation
+
+- improve readability of setup and changelog generation instructions in README - (85de36d) - Irabeny
 
 #### Miscellaneous Tasks
 
-- update changelog and readme formatting - (987289d) - Irabeny
+- add changelog script, Makefile, and standard gitignore - (7fe4d12) - Irabeny
+- reformat changelog with additional spacing and section grouping - (8b55fd3) - Irabeny
+- update changelog and readme formatting - (2796dfb) - Irabeny
 - align commit types and advise dev to use cocogitto - (e35ad22) - Irabeny
 
 - - -
