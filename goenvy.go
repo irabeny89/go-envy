@@ -1,152 +1,160 @@
-// Package to load and set environment variables from a file e.g .env file.
+// Package goenvy provides a simple way to load environment variables from .env files.
+// It supports basic key-value pairs, comments, quoted strings, and multiline values.
 //
-// You can load your environment variables from multiple files by calling any of the load functions (LoadEnv, LoadEnvPath etc) multiple times.
+// Behavior:
+// By default, goenvy can automatically load environment variables from a ".env" file in the
+// root directory at startup if the environment variable GOENVY_AUTO_LOAD is set to "true" or "1".
 //
-// Note: The last load function overwrites any previous environment variable value
+// Configuration:
+//   - GOENVY_AUTO_LOAD: Set to "true" or "1" to enable automatic loading of the .env file on init.
+//   - GOENVY_SHOW_LOGS: Set to "true" or "1" to show loading status and error messages in the console.
 //
 // Usage:
 //
-//	package main
-//	import (
-//	  "os"
-//	  goenvy "github.com/irabeny89/go-envy"
-//	)
+// Automatic loading:
+//	import _ "github.com/irabeny89/go-envy" // Ensure GOENVY_AUTO_LOAD=true is set in your environment
+//
+// Manual loading:
+//	import goenvy "github.com/irabeny89/go-envy"
+//
 //	func main() {
-//	 // invoke early to load and set variables in env file
-//	 goenvy.LoadEnv() // 1: loads from default .env file
-//	 // 2: (optional) load & append from `.env.development` file
-//	 goenvy.LoadEnvPath(".env.development") // this will overwrite same key values assigned from step 1
-//	 // then you can access variables like usual
-//	 env := os.GetEnv("KEY")
+//	    // Load from default .env
+//	    goenvy.LoadEnvPath(".env")
+//
+//	    // Load and override with environment-specific file
+//	    goenvy.LoadEnvPath(".env.development")
 //	}
 package goenvy
 
 import (
 	"bufio"
+	"fmt"
+	"io"
 	"os"
 	"strings"
 )
 
 const defaultPath string = ".env"
 
-func processEnvFile(file *os.File) {
+var (
+	autoLoad = false
+	showLogs = false
+)
+
+// init automatically attempts to load the .env file if GOENVY_AUTO_LOAD is enabled.
+func init() {
+	configureAndLoad()
+}
+
+// configureAndLoad reads environment configuration and attempts to load the default .env file.
+// It is separated from init() to allow for easier unit testing.
+func configureAndLoad() {
+	envAutoLoad := os.Getenv("GOENVY_AUTO_LOAD")
+	if envAutoLoad != "" {
+		autoLoad = envAutoLoad == "true" || envAutoLoad == "1"
+	}
+	if !autoLoad {
+		return
+	}
+	envShowLogs := os.Getenv("GOENVY_SHOW_LOGS")
+	if envShowLogs != "" {
+		showLogs = envShowLogs == "true" || envShowLogs == "1"
+	}
+	if showLogs {
+		fmt.Println("[GOENVY.INFO] Auto-loading environment variables from", defaultPath)
+	}
+	err := LoadEnvPath(defaultPath)
+	if err != nil {
+		if showLogs {
+			fmt.Println("[GOENVY.ERROR] Error loading .env file:", err)
+			fmt.Println("[GOENVY.INFO] Ensure that the file exists and is in the root directory of your project.")
+			fmt.Println("[GOENVY.INFO] Or load it yourself by calling LoadEnvPath(pathToFile) function in main function. e.g goenvy.LoadEnvPath(\".env.development\") in main function.")
+		}
+		return
+	}
+	if showLogs {
+		fmt.Println("[GOENVY.INFO] You can override and load more with LoadEnvPath() function e.g goenvy.LoadEnvPath(\".env.development\") in main function.")
+	}
+}
+
+// processEnvFile reads the provided reader line by line and sets environment variables.
+// It handles comments (#), single/double quoted values, and multiline strings.
+func processEnvFile(r io.Reader) error {
 	var multilineKey string
 	var multilineVal string
-	scanner := bufio.NewScanner(file)
+	var quoteChar string
+
+	scanner := bufio.NewScanner(r)
 	for scanner.Scan() {
 		lineText := scanner.Text()
-		kvSlice := strings.Split(lineText, "=")
 
-		isComment := strings.HasPrefix(lineText, "#")
-		hasValidPattern := len(kvSlice) == 2
-		isMultiline := len(multilineVal) != 0
-		hasLineText := len(lineText) > 0
-
-		if !isComment && hasValidPattern {
-			k, v := kvSlice[0], kvSlice[1]
-			k, v = strings.Trim(k, " "), strings.Trim(v, " ")
-
-			isSingleLineDoubleQuotes := strings.HasPrefix(v, "\"") && strings.HasSuffix(v, "\"")
-			isSingleLineSingleQuotes := strings.HasPrefix(v, "'") && strings.HasSuffix(v, "'")
-
-			// single line with quotes e.g KEY='val'
-			if isSingleLineDoubleQuotes || isSingleLineSingleQuotes {
-				v = v[1 : len(v)-1] // remove enclosing quotes
-				os.Setenv(k, v)
-				continue
-			}
-			// multiline with quotes begins
-			if strings.HasPrefix(v, "\"") || strings.HasPrefix(v, "'") {
-				multilineKey = k
-				multilineVal = v[1:] + "\n" // ignore starting quote eg `'` or `"`
-				continue
-			}
-			// single line no quotes
-			os.Setenv(k, v)
-		}
-		if isMultiline && hasLineText {
-			// multiline ends with closing quote on a new line alone
-			if len(lineText) == 1 {
-				// do nothing & reset multiline variables
-				multilineKey, multilineVal = "", ""
-				continue
-			}
-			// multiline ends with text e.g abc'
-			if strings.HasSuffix(lineText, "\"") || strings.HasSuffix(lineText, "'") {
-				// ignore closing quote eg `'` or `"`
+		if multilineKey != "" {
+			// In multiline mode
+			if strings.HasSuffix(lineText, quoteChar) {
+				// End of multiline
 				multilineVal += lineText[:len(lineText)-1]
 				os.Setenv(multilineKey, multilineVal)
-				// reset multiline variables
-				multilineKey, multilineVal = "", ""
-				continue
+				multilineKey = ""
+				multilineVal = ""
+				quoteChar = ""
+			} else {
+				multilineVal += lineText + "\n"
+				// Update environment variable as we go (matching original behavior but potentially more robust)
+				os.Setenv(multilineKey, multilineVal)
 			}
-			// regular line, so add new line to look multiline on print
-			multilineVal += lineText + "\n"
-			os.Setenv(multilineKey, multilineVal)
 			continue
 		}
+
+		if strings.HasPrefix(strings.TrimSpace(lineText), "#") || strings.TrimSpace(lineText) == "" {
+			continue
+		}
+
+		kvSlice := strings.SplitN(lineText, "=", 2)
+		if len(kvSlice) != 2 {
+			continue
+		}
+
+		k := strings.TrimSpace(kvSlice[0])
+		v := strings.TrimSpace(kvSlice[1])
+
+		if (strings.HasPrefix(v, "\"") && strings.HasSuffix(v, "\"")) || (strings.HasPrefix(v, "'") && strings.HasSuffix(v, "'")) {
+			// Single line with quotes
+			os.Setenv(k, v[1:len(v)-1])
+			continue
+		}
+
+		if strings.HasPrefix(v, "\"") || strings.HasPrefix(v, "'") {
+			// Start multiline
+			multilineKey = k
+			quoteChar = v[:1]
+			multilineVal = v[1:] + "\n"
+			continue
+		}
+
+		// Regular single line
+		os.Setenv(k, v)
 	}
 
 	if err := scanner.Err(); err != nil {
-		panic(err)
+		return err
 	}
+	return nil
 }
 
-// This function reads the environment variables in a file (e.g. ".env") into the system environment at runtime.
-//
-// Note: ensure to call this function before accessing the environment variables from the file. It is best placed as the first line of code in your root program e.g "main.go" or [package].go.
-//
-// Usage:
-//
-//	package main
-//	import (
-//	  "os"
-//	  goenvy "github.com/irabeny89/go-envy"
-//	)
-//	func main() {
-//	 // invoke early to load and set variables in env file
-//	 goenvy.LoadEnv()
-//	// goenvy.LoadEnv(".env") // optional path param can be passed
-//	 // then you can access variables like usual
-//	 env := os.GetEnv("KEY")
-//	}
-func LoadEnv(path ...string) {
-	var file *os.File
-	var err error
-	if len(path) == 0 {
-		file, err = os.Open(defaultPath)
-	} else {
-		file, err = os.Open(path[0])
-	}
-	if err != nil {
-		panic(err)
-	}
-	defer file.Close()
-	processEnvFile(file)
-}
-
-// This function reads the environment variables from the file path (e.g. ".env.development") argument provided on execution.
-//
-// Note: ensure to call this function before accessing the environment variables from the file. It is best placed as the first line of code in your root program e.g "main.go" or [package].go.
-//
-// Usage:
-//
-//	package main
-//	import (
-//	  "os"
-//	  goenvy "github.com/irabeny89/go-envy"
-//	)
-//	func main() {
-//	 // invoke early to load and set variables in env file
-//	 goenvy.LoadEnvPath()
-//	 // then you can access variables like usual
-//	 env := os.GetEnv("KEY")
-//	}
-func LoadEnvPath(path string) {
+// LoadEnvPath reads the environment variables from the specified file path and sets them.
+// If the file cannot be opened, it prints an error message to stdout (if logging is enabled or relevant).
+// Existing environment variables with the same keys will be overwritten.
+func LoadEnvPath(path string) error {
 	file, err := os.Open(path)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	defer file.Close()
-	processEnvFile(file)
+	if err := processEnvFile(file); err != nil {
+		return err
+	}
+	if showLogs {
+		fmt.Printf("[GOENVY.SUCCESS] Environment variables loaded from %s successfully.\n", path)
+	}
+	return nil
 }
