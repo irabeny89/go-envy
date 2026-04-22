@@ -1,49 +1,103 @@
-# Go Envy
+# Go Envy 🚀
 
-Package to load and set environment variables from a file e.g `.env` file.
-This function reads the environment variables in a file(e.g. ".env") into the system environment at runtime.
+`go-envy` is a zero-dependency Go package that makes it easy to load environment variables from `.env` files into your system environment. It supports comments, quoted strings, and even multiline values, making it flexible for complex configurations.
+
+## Features
+
+- ✅ **Automatic Loading**: Optionally load your `.env` file automatically at startup.
+- ✅ **Multiline Support**: Handle complex strings spanning multiple lines.
+- ✅ **Quoted Values**: Support for both single (`'`) and double (`"`) quotes.
+- ✅ **Zero Dependencies**: Pure Go implementation using only the standard library.
+- ✅ **Flexible Manual Loading**: Load and merge multiple environment files in sequence.
+
+## Installation
+
+```bash
+go get github.com/irabeny89/go-envy
+```
 
 ## How To Use
 
-First, ensure a `.env` file contains environment variables you want within your code:
+### 1. Create your `.env` file
+
+Create a `.env` file in your project's root directory:
 
 ```sh
-# comment
-NO_SPACE=value1
-SPACED_ENTRY = value2
-SINGLE_QUOTED='single quote text allowed'
-DOUBLE_QUOTED="double quote text allowed"
-SINGLE_QUOTES_MULTILINE='single quotes first line
-another line but ensure they are wrapped in quotes
-'
-DOUBLE_QUOTES_MULTILINE="double quotes first line
-another line but ensure they are wrapped in quotes"
+# This is a comment
+DATABASE_URL=postgres://user:pass@localhost:5432/db
+API_KEY="my-secret-key"
+APP_ENV='development'
+
+# Multiline values are supported
+CERTIFICATE="-----BEGIN CERTIFICATE-----
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA75...
+-----END CERTIFICATE-----"
 ```
 
-Ensure to call the `LoadEnv()` function before accessing the environment variables from the file.
-It is best placed as the first line of code in your root program e.g `main.go` or `package.go`
+### 2. Load environment variables
+
+#### Automatic Loading (Recommended)
+
+You can enable automatic loading of the default `.env` file by setting the `GOENVY_AUTO_LOAD` environment variable to `true` and importing the package with a blank identifier:
 
 ```go
 package main
+
 import (
-  "os"
-  goenvy "github.com/irabeny89/go-envy"
+ "os"
+ // Automatically loads .env if GOENVY_AUTO_LOAD=true
+ _ "github.com/irabeny89/go-envy"
 )
+
 func main() {
-// invoke early to load and set variables in env file
-  goenvy.LoadEnv() // 1: loads from default .env file
-// goenvy.LoadEnv(".env") // optional path param can be passed
-// 2: (optional) load & append from `.env.development` file 
-  goenvy.LoadEnvPath(".env.development") // this will overwrite same key values assigned from step 1
-  // then you can access variables like usual
-  env := os.GetEnv("KEY")
+ dbURL := os.Getenv("DATABASE_URL")
+ // Use your variables...
 }
 ```
 
-## Test
+#### Manual Loading
 
-If you have access to the source code, you can run test.
+If you prefer explicit control or need to load specific files:
+
+```go
+package main
+
+import (
+ "os"
+ goenvy "github.com/irabeny89/go-envy"
+)
+
+func main() {
+ // Load the default .env file manually
+ err := goenvy.LoadEnvPath(".env")
+ if err != nil {
+  // Handle error (e.g., file not found)
+ }
+
+ // Load and override with environment-specific configurations
+ goenvy.LoadEnvPath(".env.development")
+
+ apiKey := os.Getenv("API_KEY")
+}
+```
+
+## Configuration
+
+You can control the behavior of the package using the following environment variables:
+
+| Variable | Default | Description |
+| :--- | :--- | :--- |
+| `GOENVY_AUTO_LOAD` | `false` | Set to `true` or `1` to automatically load `.env` on startup. |
+| `GOENVY_SHOW_LOGS` | `false` | Set to `true` or `1` to enable success/error logging to console. |
+
+## Running Tests
+
+To run the test suite:
 
 ```bash
-go test
+go test -v .
 ```
+
+## License
+
+This project is licensed under the MIT License.
