@@ -137,6 +137,9 @@ chmod +x scripts/setup-hooks.sh
 
 This will create a `commit-msg` hook in your `.git` directory that validates your messages before allowing a commit.
 
+> [!TIP]
+> **Recommended**: Install [Cocogitto](https://github.com/cocogitto/cocogitto) locally. It provides a better experience for validating commits and handles versioning/changelogs automatically.
+
 ## License
 
 This project is licensed under the MIT License.

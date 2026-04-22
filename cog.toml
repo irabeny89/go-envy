@@ -17,6 +17,17 @@ post_package_bump_hooks = []
 [git_hooks]
 
 [commit_types]
+feat = { changelog_title = "Features" }
+fix = { changelog_title = "Bug Fixes" }
+refactor = { changelog_title = "Refactorings" }
+docs = { changelog_title = "Documentation" }
+perf = { changelog_title = "Performance Improvements" }
+test = { changelog_title = "Tests" }
+style = { changelog_title = "Styles" }
+ci = { changelog_title = "Continuous Integration" }
+chore = { changelog_title = "Miscellaneous Tasks" }
+build = { changelog_title = "Build System" }
+revert = { changelog_title = "Reversions" }
 
 [changelog]
 path = "CHANGELOG.md"
