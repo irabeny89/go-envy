@@ -135,11 +135,19 @@ To ensure your commit messages are always compliant, you can set up a Git hook t
 chmod +x scripts/setup-hooks.sh
 ./scripts/setup-hooks.sh
 ```
+Alternatively, if you use `make`, run `make setup-hooks`.
 
 This will create a `commit-msg` hook in your `.git` directory that validates your messages before allowing a commit.
 
+### 5. Generating Changelogs Locally
+If you want to update the `CHANGELOG.md` file locally without waiting for the CI pipeline:
+```bash
+make changelog
+```
+Or directly run the script: `./scripts/generate-changelog.sh`.
+
 > [!TIP]
-> **Recommended**: Install [Cocogitto](https://github.com/cocogitto/cocogitto) locally. It provides a better experience for validating commits and handles versioning/changelogs automatically.
+> **Recommended**: Install [Cocogitto](https://github.com/cocogitto/cocogitto) locally. It provides a better experience for validating commits and handles versioning/changelogs automatically. This tool is required to run the changelog script locally.
 
 ## License
 
