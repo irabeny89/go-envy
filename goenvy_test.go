@@ -1,3 +1,4 @@
+// Package goenvy tests for environment variable loading and parsing.
 package goenvy
 
 import (
