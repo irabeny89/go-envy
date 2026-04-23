@@ -13,9 +13,11 @@
 // Usage:
 //
 // Automatic loading:
+//
 //	import _ "github.com/irabeny89/go-envy" // Ensure GOENVY_AUTO_LOAD=true is set in your environment
 //
 // Manual loading:
+//
 //	import goenvy "github.com/irabeny89/go-envy"
 //
 //	func main() {
@@ -161,4 +163,14 @@ func LoadEnvPath(path string) error {
 		fmt.Printf("[GOENVY.SUCCESS] Environment variables loaded from %s successfully.\n", path)
 	}
 	return nil
+}
+
+// Get returns the value of the provided key(k) from the
+// environment and if not found it rerurns the default(d)
+func Get(k, d string) string {
+	v, exist := os.LookupEnv(k)
+	if !exist {
+		return d
+	}
+	return v
 }
