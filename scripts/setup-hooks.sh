@@ -20,6 +20,8 @@ cat << 'EOF' > "$HOOK_FILE"
 
 COMMIT_MSG_FILE=$1
 COMMIT_MSG=$(cat "$COMMIT_MSG_FILE")
+# Extract only the first line (subject) for regex validation
+SUBJECT=$(head -n 1 "$COMMIT_MSG_FILE")
 
 # 1. Try using cocogitto (cog) if installed
 if command -v cog &> /dev/null; then
@@ -29,9 +31,10 @@ fi
 
 # 2. Fallback: Simple regex check if cog is not installed
 # Regex for: type(scope)!: description
-REGEXT_PATTERN="^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(?:\(.+\))?(!?): .+"
+# Note: Bash uses Extended Regular Expressions (ERE) which don't support non-capturing groups (?:...)
+REGEX_PATTERN="^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\(.+\))?(!?): .+"
 
-if [[ ! $COMMIT_MSG =~ $REGEXT_PATTERN ]]; then
+if [[ ! "$SUBJECT" =~ $REGEX_PATTERN ]]; then
     echo "Error: Invalid commit message format."
     echo "Your commit message must follow Conventional Commits: <type>(<scope>)!: <description>"
     echo "Example: feat(api): add new endpoint"
