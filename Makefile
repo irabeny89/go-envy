@@ -11,6 +11,10 @@ test:
 test-race:
 	go test -race ./...
 
+# Run with the race detector
+run-race:
+	go run -race .
+
 # Generate a coverage report
 coverage:
 	go test -v -cover -coverprofile=coverage.out ./...
